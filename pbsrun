@@ -1,0 +1,226 @@
+#!/usr/bin/perl -w
+
+use Getopt::Std;
+
+my $confQsub    = "/usr/bin/qsub"; # qsub command
+my $confShell   = "/bin/sh";       # the submit script is written for this shell
+my $confMaxAge  = 7*24*60*60;      # maximum life time for files in $HOME/.pbsrun: 7 days
+my $confHistory = "history.txt";
+
+my $workdir = gotoWorkDir();
+cleanup();
+
+getopts('nvN:m:e:q:o:h');
+
+printHelpAndExit() if ($opt_h) || (@ARGV < 1);
+
+if ($opt_m)
+  {
+    die "pbsrun: -m argument [$opt_m] does not look like an email address\n" unless $opt_m =~ /.*@.*/;
+    $opt_m = "-m abe -M $opt_m";
+  }
+else
+  {
+    $opt_m = "-m n";
+  }
+
+$opt_N = '\"'.$ARGV[0].'\"' unless $opt_N;
+
+$opt_q = "-q " . $opt_q        if $opt_q;
+
+0 if $opt_n;
+0 if $opt_h;
+0 if $opt_v;
+$opt_o = "" if !$opt_o;
+$opt_q = "" if !$opt_q;
+
+my $cmd = join(" ",@ARGV);
+
+
+my $jobName = NewJob();
+
+WriteHistory(time(),$jobName,"Command: ",$cmd);
+
+open(JOBFILE,">$jobName.script") || die "pbsrun: Could not open $jobName: $!\n";
+
+print JOBFILE "#!$confShell\n";
+print JOBFILE "# This file was generated automatically.\n"; 
+print JOBFILE "# on ".(scalar localtime)."\n";
+print JOBFILE "#\n";
+print JOBFILE "# restore the user environment\n";
+foreach my $key (sort keys %ENV)
+  {
+    next if ($key eq "DISPLAY");
+    next if ($key eq "HOSTNAME");
+    next if ($key eq "HOSTTYPE");
+    next if ($key eq "LOGNAME");
+    next if ($key eq "MACHTYPE");
+    next if ($key eq "MAIL");
+    next if ($key eq "OSTYPE");
+    next if ($key eq "OLDPWD");
+    next if ($key eq "PWD");
+    next if ($key eq "SHELL");
+    next if ($key eq "SHLVL");
+    next if ($key =~ /^SSH/);
+    next if ($key eq "TERM");
+    next if ($key eq "USER");
+    next if ($key eq "WINDOWID");
+    next if ($key eq "LS_COLORS");
+    next if ($key eq "XAUTHORITY");
+    next if ($key eq "_");
+    my $val = $ENV{$key};
+    print JOBFILE "export $key=\"$val\"\n";
+  }
+
+print JOBFILE "#\n";
+print JOBFILE "# restore the user working directory\n";
+my $pwd = $ENV{"PWD"};
+print JOBFILE "cd $pwd\n" ;
+WriteHistory(time(),$jobName,"Pwd: ",$pwd);
+
+print JOBFILE "# save the node name\n";
+print JOBFILE "hostname >$workdir/$jobName.hostname\n";
+print JOBFILE "# run the user command:\n";
+print JOBFILE "(".$cmd.")"." >/dev/null 2>/dev/null\n";
+print JOBFILE "# save the exit status: \n";
+print JOBFILE "echo \$\? >$workdir/$jobName.status\n";
+#print JOBFILE "printenv | grep PBS\n";
+#print JOBFILE "set\n";
+print JOBFILE "exit \$\?\n";
+print JOBFILE "# end of file\n";
+close JOBFILE;
+
+my $outputfile = "$workdir/$jobName.stderr";
+
+my $qsubcmd = "$confQsub -S $confShell -r n -j eo -e $outputfile -N $opt_N $opt_o $opt_m $opt_q < $jobName.script";
+print "pbsrun: $qsubcmd\n" if $opt_v;
+
+WriteHistory(time(),$jobName,"Qsub: ",$qsubcmd);
+
+if ($opt_n)
+  {
+    WriteHistory(time(),$jobName,"Pbs job: not submitted");
+
+    print "PBS Job id: not submitted\n";
+    print "Job output: $outputfile\n";
+  }
+else
+  {
+    my $jobid = submitJob($qsubcmd);
+    
+    die "pbsrun: Failed to submit the pbs job!\n" if !$jobid;
+    
+    WriteHistory(time(),$jobName,"Pbs job: ",$jobid);
+    
+    print "PBS Job id: $jobid\n";
+    print "Job output: $outputfile\n";
+  }
+
+exit 0;
+
+sub NewJob
+  {
+    my @now = localtime();
+    return sprintf("%04d%02d%02d-%02d%02d%02d-%d",
+		   1900+$now[5],1+$now[4],$now[3],
+		   $now[2],$now[1],$now[0],$$);
+  }
+
+sub submitJob
+  {
+    my $cmd = shift @_;
+    open(QSUBPROC, "$cmd 2>&1 |") || die "pbsrun: Cannot spawn $confQsub: $!\n";
+
+    my $jobid;
+    
+    while (<QSUBPROC>)
+      {
+	print "qsub: ".$_ if $opt_v;
+	$jobid = $_ if /^\d+/;
+      }
+    close QSUBPROC;
+
+    $jobid =~ s/\n$// if defined $jobid;
+
+    return $jobid;
+  }
+
+sub gotoWorkDir
+  {
+    my $workdir = $ENV{"HOME"}."/.pbsrun";
+    if (! -d $workdir)
+      {
+	print "pbsrun: no $workdir directory. Making one.\n";
+	mkdir($workdir,0744) || die "pbsrun: Could not make $workdir: $!\n";
+      }
+    chdir $workdir || die "pbsrun: Cannot chdir to $workdir: $!\n";
+    return $workdir;
+  }
+
+sub WriteHistory
+  {
+    my $now = localtime(shift @_);
+    open(TMPOUT,">>$confHistory");
+    print TMPOUT $now,": job ",shift @_,": ",join("",@_),"\n";
+    close TMPOUT;
+  }
+    
+sub cleanup
+  {
+    my $now = time();
+    my @ls = `/bin/ls -1`;
+    foreach $ls (sort @ls)
+      {
+	chop $ls;
+	next if $ls eq $confHistory;
+
+	my @stat = stat $ls;
+	my $mtime = $stat[9];
+
+	if ($ls =~ /(.*)\.status/)
+	  {
+	    my $status = `cat $ls`;
+	    chop $status;
+	    #print "time $mtime, status [$status]\n";
+	    WriteHistory($mtime,$1,"Exit status: ",$status);
+	    unlink $ls;
+	    next;
+	  }
+
+	if ($ls =~ /(.*)\.hostname/)
+	  {
+	    my $hostname = `cat $ls`;
+	    chop $hostname;
+	    #print "time $mtime, hostname [$hostname]\n";
+	    WriteHistory($mtime,$1,"Started on: ",$hostname);
+	    unlink $ls;
+	    next;
+	  }
+
+	my $age = $now - $mtime;
+
+	#print "file [$ls] age: [$age]\n";
+
+	if ($age > $confMaxAge)
+	  {
+	    unlink $ls;
+	  }
+      }
+  }
+
+sub printHelpAndExit
+{
+    print "Usage: pbsrun [-q queue] [-N job_name] command...\n";
+    print "  Options: \n";
+    print "    [-h] Prints out this message.\n";
+    print "    [-N job_name]     name this job.\n";
+    print "    [-m user\@host]   emails you when the job begin, ends or aborts.\n";
+    print "    [-o qsub_options] passes options to the call to qsub.\n";
+    print "    [-q queue]        selects a queue.\n";
+    print "    [-n] test mode: do not run any pbs commands.\n";
+    print "    [-k] keep, do not delete temp files.\n";
+    print "    [-v] be verbose, show progress.\n";
+    exit 1;
+}
+
+#end file

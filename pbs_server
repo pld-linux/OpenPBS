@@ -1,0 +1,45 @@
+#!/bin/sh 
+#
+# pbs_server	This script will start and stop the PBS daemons
+#
+# chkconfig: 345 85 85
+# description: PBS is a batch versitle batch system for SMPs and clusters
+#
+
+# Source the library functions
+. /etc/rc.d/init.d/functions
+
+# let see how we were called
+case "$1" in
+  start) 
+	if [ ! -f /var/lock/subsys/pbs_server ]; then
+		msg_starting "pbs_server"
+		daemon /usr/sbin/pbs_server
+		RETVAL=$?
+		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/pbs_server
+	else
+		msg_already_running "pbs_server"
+	fi
+  	;;
+  stop)
+  	if [ -f /var/lock/subsys/pbs_server ]; then 
+		msg_stopping "pbs_server"
+		killproc pbs_server
+		rm -rf /var/lock/subsys/pbs_server >/dev/null 2>&1
+	else
+		msg_not_running pbs_server
+		exit 1
+	fi
+  ;;
+  status)
+	status pbs_server
+  ;;
+  restart)
+	$0 stop
+	$0 start
+  ;;
+  *)
+        msg_usage "$0 {start|stop|status|restart|reload|force-reload}"
+	exit 1
+esac
+exit $RETVAL

@@ -1,0 +1,104 @@
+#!/usr/bin/perl -w
+
+use Getopt::Std;
+
+getopts('s:h');
+
+0 if $opt_h;
+0 if $opt_s;
+
+printHelpAndExit() if ($opt_h)||(@ARGV<1);
+
+my $server = shift @ARGV;
+my $spool  = $opt_s;
+$spool = "/var/spool/pbs" if !$spool;
+die "pbsconfig: PBS spool directory $spool does not exist!\n" if ! -d $spool;
+
+my $serverName = $server;
+my @server = split(/\./,$server);
+die "pbsconfig: PBS server name [$server] should be fully qualified, eg [yourhost.yourdomain.com]\n" if @server < 2;
+shift @server;
+my $restricted = "*.".join(".",@server);
+
+my $cpuinfo = `cat /proc/cpuinfo`;
+my @cpuinfo = split(/\n/,$cpuinfo);
+
+my $numcpu   = scalar grep(/processor/,@cpuinfo);
+my $cputype  = join(", ",getvalues("model name",@cpuinfo));
+my $cpuspeed = join(", ",getvalues("cpu MHz",@cpuinfo));
+
+print "PBS Server name: $serverName\n";
+print "PBS Subnet:      $restricted\n";
+print "Number of CPUs:  $numcpu\n";
+print "CPU type:        $cputype\n";
+print "CPU speed:       $cpuspeed\n";
+
+my $ideal_load = $numcpu - 0.1;
+my $max_load   = $numcpu - 0.1;
+
+my $momconfig = "$spool/mom_priv/config";
+my $mom = "";
+
+$mom = `cat $momconfig` if -r $momconfig;
+
+#print "old [$mom]\n";
+
+$mom = insert($mom,'$clienthost',$serverName);
+$mom = insert($mom,'$restricted',$restricted);
+$mom = insert($mom,'$usecp',     "*:/ /");
+$mom = insert($mom,'$ideal_load',$numcpu - 0.1);
+$mom = insert($mom,'$max_load',  $numcpu - 0.1);
+
+#print "new [$mom]\n";
+
+writeFile($momconfig,$mom);
+writeFile("$spool/default_server","$serverName\n");
+writeFile("$spool/server_name","$serverName\n");
+
+system "/etc/rc.d/init.d/pbs_mom restart";
+
+exit 0;
+
+sub writeFile
+  {
+    my $filename = shift @_;
+    my $content  = shift @_;
+    open(TMPOUT,">$filename") || die "pbsconfig: Cannot write to $filename: $!\n";
+    print TMPOUT $content;
+    close TMPOUT;
+  }
+
+sub insert
+  {
+    my $cfg = shift @_;
+    my $key = shift @_;
+    my $value = shift @_;
+
+    return $cfg . "$key $value\n" if ! ($cfg =~ /\Q$key\E/);
+
+    $cfg =~ s/^\Q$key\E\b.*$/$key $value/m;
+
+    return $cfg;
+  }
+
+sub printHelpAndExit
+  {
+    print STDERR "Usage: pbsconfig [-h] [-s spooldir] servername\n";
+    exit 1;
+  }
+
+sub getvalues
+  {
+    my $key = shift @_;
+    my @ret;
+    foreach my $v (@_)
+      {
+	#print "[$v]\n";
+	next if !($v =~ /$key/);
+	my ($key,$value) = split(/: /,$v);
+	push @ret,$value;
+      }
+    return @ret;
+  }
+
+#end file
