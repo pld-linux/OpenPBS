@@ -124,11 +124,11 @@ cp pbs_mom pbs_server pbs_sched $RPM_BUILD_ROOT/etc/rc.d/init.d
 #cp pbsenv.sh pbsenv.csh $RPM_BUILD_ROOT/usr/bin
 cp pbsrun pbsconfig $RPM_BUILD_ROOT%{_bindir}
 # make sure all the config files exist
-touch    $RPM_BUILD_ROOT/var/spool/pbs/default_server
-touch    $RPM_BUILD_ROOT/var/spool/pbs/server_name
-touch    $RPM_BUILD_ROOT/var/spool/pbs/mom_priv/config
-touch    $RPM_BUILD_ROOT/var/spool/pbs/sched_priv/sched_config
-touch    $RPM_BUILD_ROOT/var/spool/pbs/server_priv/nodes
+touch $RPM_BUILD_ROOT/var/spool/pbs/default_server
+touch $RPM_BUILD_ROOT/var/spool/pbs/server_name
+touch $RPM_BUILD_ROOT/var/spool/pbs/mom_priv/config
+touch $RPM_BUILD_ROOT/var/spool/pbs/sched_priv/sched_config
+touch $RPM_BUILD_ROOT/var/spool/pbs/server_priv/nodes
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -136,49 +136,49 @@ rm -rf $RPM_BUILD_ROOT
 %post mom
 /sbin/chkconfig --add pbs_mom
 if [ -f /var/lock/subsys/pbs_mom ]; then
-        /etc/rc.d/init.d/pbs_mom restart >/dev/null 2>&1
+	/etc/rc.d/init.d/pbs_mom restart >/dev/null 2>&1
 else
-        echo "Run \"/etc/rc.d/init.d/pbs_mom start\" to start pbs_mom daemon."
+	echo "Run \"/etc/rc.d/init.d/pbs_mom start\" to start pbs_mom daemon."
 fi
 
 %preun mom
 if [ "$1" = "0" ]; then
-        if [ -f /var/lock/subsys/pbs_mom ]; then
-                /etc/rc.d/init.d/pbs_mom stop >&2
-        fi
-        /sbin/chkconfig --del pbs_mom
+	if [ -f /var/lock/subsys/pbs_mom ]; then
+		/etc/rc.d/init.d/pbs_mom stop >&2
+	fi
+	/sbin/chkconfig --del pbs_mom
 fi
 
 %post server
 /sbin/chkconfig --add pbs_server
 if [ -f /var/lock/subsys/pbs_server ]; then
-        /etc/rc.d/init.d/pbs_server restart >/dev/null 2>&1
+	/etc/rc.d/init.d/pbs_server restart >/dev/null 2>&1
 else
-        echo "Run \"/etc/rc.d/init.d/pbs_server start\" to start pbs_server daemon."
+	echo "Run \"/etc/rc.d/init.d/pbs_server start\" to start pbs_server daemon."
 fi
 
 %preun server
 if [ "$1" = "0" ]; then
-        if [ -f /var/lock/subsys/pbs_server ]; then
-                /etc/rc.d/init.d/pbs_server stop >&2
-        fi
-        /sbin/chkconfig --del pbs_server
+	if [ -f /var/lock/subsys/pbs_server ]; then
+		/etc/rc.d/init.d/pbs_server stop >&2
+	fi
+	/sbin/chkconfig --del pbs_server
 fi
 
 %post sched
 /sbin/chkconfig --add pbs_sched
 if [ -f /var/lock/subsys/pbs_shed ]; then
-        /etc/rc.d/init.d/pbs_shed restart >/dev/null 2>&1
+	/etc/rc.d/init.d/pbs_shed restart >/dev/null 2>&1
 else
-        echo "Run \"/etc/rc.d/init.d/pbs_shed start\" to start pbs_shed daemon."
+	echo "Run \"/etc/rc.d/init.d/pbs_shed start\" to start pbs_shed daemon."
 fi
 
 %preun sched
 if [ "$1" = "0" ]; then
-        if [ -f /var/lock/subsys/pbs_sched ]; then
-                /etc/rc.d/init.d/pbs_sched stop >&2
-        fi
-        /sbin/chkconfig --del pbs_sched
+	if [ -f /var/lock/subsys/pbs_sched ]; then
+		/etc/rc.d/init.d/pbs_sched stop >&2
+	fi
+	/sbin/chkconfig --del pbs_sched
 fi
 
 %files
