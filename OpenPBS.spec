@@ -1,29 +1,22 @@
-#
-# spec file for package OpenPBS (Version 2.3.16)
-#
-#
-# Usage:
-#   1) build the SRPM:       (as user) rpmbuild -bs OpenPBS.spec
-#   2) build the binary RPM: (as root) rpmbuild --rebuild ...srpm
-#
-
 Summary:	Portable Batch System
+Summary(pl):	Portable Batch System - przeno¶ny system wsadowy
 Name:		OpenPBS
 Version:	2.3.16
 Release:	0.1
-Requires:	tcl tk
-Copyright:	Portable Batch System (PBS) Software License
+License:	Portable Batch System (PBS) Software License
 Group:		Applications/Networking
-URL:		http://www.openpbs.org/
 Source0:	%{name}_2_3_16.tar.gz
 Source1:	pbs_mom
 Source2:	pbs_server
 Source3:	pbs_sched
 Source4:	pbsrun
-#Source5:      pbsenv.sh
-#Source6:      pbsenv.csh
+#Source5:	pbsenv.sh
+#Source6:	pbsenv.csh
 Source7:	pbsconfig
 Source8:	patch.ko
+URL:		http://www.openpbs.org/
+Requires:	tcl
+Requires:	tk
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -33,40 +26,62 @@ on networked, multi-platform UNIX environments, including
 heterogeneous clusters of workstations, supercomputers, and massively
 parallel systems.
 
-Authors:
-- -------- NASA Ames Research Cente
-
+%description -l pl
+PBS (Portable Batch System - przeno¶ny system wsadowy) jest
+elastycznym oprogramowaniem do przetwarzania wsadowego rozwijanym w
+NASA Ames Research Center. Dzia³a w usieciowionych, wieloplatformowych
+¶rodowiskach uniksowych, w³±cznie z heterogenicznymi klastrami stacji
+roboczych, superkomputerów i systemów masowego przetwarzania
+równoleg³ego.
 
 %package mom
 Summary:	PBS client daemon: pbs_mom
-Requires:	OpenPBS
-Group:		Applications/Clustering
-######		Unknown group!
+Summary(pl):	Demon kliencki PBS: pbs_mom
+Group:		Applications/Networking
+PreReq:		rc-scripts
+Requires(post,preun):	/sbin/chkconfig
+Requires:	%{name} = %{version}
+
 %description mom
 This package contains the PBS client daemon pbs_mom executable and
 startup script.
 
+%description mom -l pl
+Ten pakiet zawiera demona klienckiego pbs_mom i jego skrypt startowy.
+
 %package server
 Summary:	PBS server daemon: pbs_server
-Requires:	OpenPBS
-Group:		Applications/Clustering
-######		Unknown group!
+Summary(pl):	Demon serwera PBS: pbs_server
+Group:		Applications/Networking
+PreReq:		rc-scripts
+Requires(post,preun):	/sbin/chkconfig
+Requires:	%{name} = %{version}
+
 %description server
 This package contains the PBS server daemon pbs_server executable and
 startup script.
 
+%description server -l pl
+Ten pakiet zawiera demona serwera PBS (pbs_server) i jego skrypt
+startowy.
+
 %package sched
 Summary:	PBS scheduler daemon: pbs_sched
-Requires:	OpenPBS
-Group:		Applications/Clustering
-######		Unknown group!
+Summary(pl):	Demon schedulera PBS: pbs_sched
+Group:		Applications/Networking
+PreReq:		rc-scripts
+Requires(post,preun):	/sbin/chkconfig
+Requires:	%{name} = %{version}
+
 %description sched
 This package contains the PBS scheduler daemon pbs_sched executable
 and startup script.
 
+%description sched -l pl
+Ten pakiet zawiera demona schedulera pbs_sched i jego skrypt startowy.
 
 %prep
-%setup -q -n OpenPBS_2_3_16
+%setup -q -n %{name}_%(echo %{version} | tr . _)
 cp %{SOURCE1} .
 cp %{SOURCE2} .
 cp %{SOURCE3} .
@@ -89,8 +104,7 @@ cp src/scheduler.cc/samples/fifo/Makefile src/scheduler.cc/samples/fifo/Makefile
 
 # make directories
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/etc/rc.d/init.d/
-install -d $RPM_BUILD_ROOT%{_prefix}
+install -d $RPM_BUILD_ROOT/etc/rc.d/init.d
 install -d $RPM_BUILD_ROOT%{_datadir}
 install -d $RPM_BUILD_ROOT/var/spool/pbs
 # kludge pbs_mkdirs to create things in $RPM_BUILD_ROOT
@@ -115,7 +129,8 @@ touch    $RPM_BUILD_ROOT/var/spool/pbs/mom_priv/config
 touch    $RPM_BUILD_ROOT/var/spool/pbs/sched_priv/sched_config
 touch    $RPM_BUILD_ROOT/var/spool/pbs/server_priv/nodes
 
-%post
+%clean
+rm -rf $RPM_BUILD_ROOT
 
 %post mom
 /sbin/chkconfig --add pbs_mom
@@ -124,14 +139,13 @@ if [ -f /var/lock/subsys/pbs_mom ]; then
 else
         echo "Run \"/etc/rc.d/init.d/pbs_mom start\" to start pbs_mom daemon."
 fi
-		
 
 %preun mom
 if [ "$1" = "0" ]; then
         if [ -f /var/lock/subsys/pbs_mom ]; then
                 /etc/rc.d/init.d/pbs_mom stop >&2
         fi
-	        /sbin/chkconfig --del pbs_mom
+        /sbin/chkconfig --del pbs_mom
 fi
 
 %post server
@@ -147,7 +161,7 @@ if [ "$1" = "0" ]; then
         if [ -f /var/lock/subsys/pbs_server ]; then
                 /etc/rc.d/init.d/pbs_server stop >&2
         fi
-	        /sbin/chkconfig --del pbs_server
+        /sbin/chkconfig --del pbs_server
 fi
 
 %post sched
@@ -163,9 +177,8 @@ if [ "$1" = "0" ]; then
         if [ -f /var/lock/subsys/pbs_sched ]; then
                 /etc/rc.d/init.d/pbs_sched stop >&2
         fi
-	        /sbin/chkconfig --del pbs_sched
+        /sbin/chkconfig --del pbs_sched
 fi
-
 
 %files
 %defattr(644,root,root,755)
@@ -263,8 +276,5 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %attr(640,root,root) /var/spool/pbs/sched_priv/resource_group
 %config(noreplace) %verify(not md5 size mtime) %attr(640,root,root) /var/spool/pbs/sched_priv/holidays
 %config(noreplace) %verify(not md5 size mtime) %attr(640,root,root) /var/spool/pbs/sched_priv/dedicated_time
-
-%clean
-rm -rf $RPM_BUILD_ROOT
 
 #end file
