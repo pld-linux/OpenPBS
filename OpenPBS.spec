@@ -41,7 +41,7 @@ Summary(pl):	Demon kliencki PBS: pbs_mom
 Group:		Applications/Networking
 PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
-Requires:	%{name} = %{version}
+Requires:	%{name} = %{version}-%{release}
 
 %description mom
 This package contains the PBS client daemon pbs_mom executable and
@@ -56,7 +56,7 @@ Summary(pl):	Demon serwera PBS: pbs_server
 Group:		Applications/Networking
 PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
-Requires:	%{name} = %{version}
+Requires:	%{name} = %{version}-%{release}
 
 %description server
 This package contains the PBS server daemon pbs_server executable and
@@ -72,7 +72,7 @@ Summary(pl):	Demon schedulera PBS: pbs_sched
 Group:		Applications/Networking
 PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
-Requires:	%{name} = %{version}
+Requires:	%{name} = %{version}-%{release}
 
 %description sched
 This package contains the PBS scheduler daemon pbs_sched executable
@@ -183,12 +183,9 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc INSTALL
-%doc PBS_License.text
-%doc Read.Me
-%doc Release_Notes
-%config(noreplace) %verify(not md5 size mtime) %attr(640,root,root) /var/spool/pbs/default_server
-%config(noreplace) %verify(not md5 size mtime) %attr(640,root,root) /var/spool/pbs/pbs_environment
+%doc INSTALL PBS_License.text Read.Me Release_Notes
+%config(noreplace) %verify(not md5 mtime size) %attr(640,root,root) /var/spool/pbs/default_server
+%config(noreplace) %verify(not md5 mtime size) %attr(640,root,root) /var/spool/pbs/pbs_environment
 %attr(755,root,root) %{_bindir}/chk_tree
 %attr(755,root,root) %{_bindir}/hostn
 %attr(755,root,root) %{_bindir}/nqs2pbs
@@ -241,7 +238,7 @@ fi
 %defattr(644,root,root,755)
 %attr(754,root,root) /etc/rc.d/init.d/pbs_mom
 %attr(755,root,root) %{_sbindir}/pbs_mom
-%config(noreplace) %verify(not md5 size mtime) %attr(640,root,root) /var/spool/pbs/mom_priv/config
+%config(noreplace) %verify(not md5 mtime size) %attr(640,root,root) /var/spool/pbs/mom_priv/config
 %dir /var/spool/pbs/mom_priv
 %dir /var/spool/pbs/mom_priv/jobs
 %dir /var/spool/pbs/mom_logs
@@ -264,8 +261,8 @@ fi
 %dir /var/spool/pbs/aux
 %dir /var/spool/pbs/checkpoint
 %dir /var/spool/pbs/undelivered
-%config(noreplace) %verify(not md5 size mtime) %attr(640,root,root) /var/spool/pbs/server_name
-%config(noreplace) %verify(not md5 size mtime) %attr(640,root,root) /var/spool/pbs/server_priv/nodes
+%config(noreplace) %verify(not md5 mtime size) %attr(640,root,root) /var/spool/pbs/server_name
+%config(noreplace) %verify(not md5 mtime size) %attr(640,root,root) /var/spool/pbs/server_priv/nodes
 
 %files sched
 %defattr(644,root,root,755)
@@ -273,9 +270,7 @@ fi
 %attr(755,root,root) %{_sbindir}/pbs_sched
 %dir /var/spool/pbs/sched_priv
 %dir /var/spool/pbs/sched_logs
-%config(noreplace) %verify(not md5 size mtime) %attr(640,root,root) /var/spool/pbs/sched_priv/sched_config
-%config(noreplace) %verify(not md5 size mtime) %attr(640,root,root) /var/spool/pbs/sched_priv/resource_group
-%config(noreplace) %verify(not md5 size mtime) %attr(640,root,root) /var/spool/pbs/sched_priv/holidays
-%config(noreplace) %verify(not md5 size mtime) %attr(640,root,root) /var/spool/pbs/sched_priv/dedicated_time
-
-#end file
+%config(noreplace) %verify(not md5 mtime size) %attr(640,root,root) /var/spool/pbs/sched_priv/sched_config
+%config(noreplace) %verify(not md5 mtime size) %attr(640,root,root) /var/spool/pbs/sched_priv/resource_group
+%config(noreplace) %verify(not md5 mtime size) %attr(640,root,root) /var/spool/pbs/sched_priv/holidays
+%config(noreplace) %verify(not md5 mtime size) %attr(640,root,root) /var/spool/pbs/sched_priv/dedicated_time
