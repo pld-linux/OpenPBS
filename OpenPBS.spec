@@ -239,7 +239,7 @@ fi
 
 %files mom
 %defattr(644,root,root,755)
-%attr(744,root,root) /etc/rc.d/init.d/pbs_mom
+%attr(754,root,root) /etc/rc.d/init.d/pbs_mom
 %attr(755,root,root) %{_sbindir}/pbs_mom
 %config(noreplace) %verify(not md5 size mtime) %attr(640,root,root) /var/spool/pbs/mom_priv/config
 %dir /var/spool/pbs/mom_priv
@@ -248,7 +248,7 @@ fi
 
 %files server
 %defattr(644,root,root,755)
-%attr(744,root,root) /etc/rc.d/init.d/pbs_server
+%attr(754,root,root) /etc/rc.d/init.d/pbs_server
 %attr(755,root,root) %{_sbindir}/pbs_server
 %dir /var/spool/pbs/server_priv
 %dir /var/spool/pbs/server_priv/jobs
@@ -269,7 +269,7 @@ fi
 
 %files sched
 %defattr(644,root,root,755)
-%attr(744,root,root) /etc/rc.d/init.d/pbs_sched
+%attr(754,root,root) /etc/rc.d/init.d/pbs_sched
 %attr(755,root,root) %{_sbindir}/pbs_sched
 %dir /var/spool/pbs/sched_priv
 %dir /var/spool/pbs/sched_logs
