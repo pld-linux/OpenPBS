@@ -6,6 +6,7 @@ Release:	0.1
 License:	Portable Batch System (PBS) Software License
 Group:		Applications/Networking
 Source0:	%{name}_2_3_16.tar.gz
+# Source0-md5:	42be627d513839a2daf258692b0092aa
 Source1:	pbs_mom
 Source2:	pbs_server
 Source3:	pbs_sched
