@@ -16,6 +16,7 @@ Source4:	pbsrun
 Source7:	pbsconfig
 Source8:	patch.ko
 URL:		http://www.openpbs.org/
+BuildRequires:	rpmbuild(macros) >= 1.268
 Requires:	tcl
 Requires:	tk
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -39,9 +40,9 @@ równoleg³ego.
 Summary:	PBS client daemon: pbs_mom
 Summary(pl):	Demon kliencki PBS: pbs_mom
 Group:		Applications/Networking
-PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name} = %{version}-%{release}
+Requires:	rc-scripts
 
 %description mom
 This package contains the PBS client daemon pbs_mom executable and
@@ -54,9 +55,9 @@ Ten pakiet zawiera demona klienckiego pbs_mom i jego skrypt startowy.
 Summary:	PBS server daemon: pbs_server
 Summary(pl):	Demon serwera PBS: pbs_server
 Group:		Applications/Networking
-PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name} = %{version}-%{release}
+Requires:	rc-scripts
 
 %description server
 This package contains the PBS server daemon pbs_server executable and
@@ -70,9 +71,9 @@ startowy.
 Summary:	PBS scheduler daemon: pbs_sched
 Summary(pl):	Demon schedulera PBS: pbs_sched
 Group:		Applications/Networking
-PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name} = %{version}-%{release}
+Requires:	rc-scripts
 
 %description sched
 This package contains the PBS scheduler daemon pbs_sched executable
@@ -102,9 +103,8 @@ cp buildutils/pbs_mkdirs buildutils/pbs_mkdirs.orig
 cp src/scheduler.cc/samples/fifo/Makefile src/scheduler.cc/samples/fifo/Makefile.orig
 
 %install
-
-# make directories
 rm -rf $RPM_BUILD_ROOT
+# make directories
 install -d $RPM_BUILD_ROOT/etc/rc.d/init.d
 install -d $RPM_BUILD_ROOT%{_datadir}
 install -d $RPM_BUILD_ROOT/var/spool/pbs
@@ -114,14 +114,14 @@ cat buildutils/pbs_mkdirs.orig | sed -e 's|%{_prefix}|$RPM_BUILD_ROOT%{_prefix}|
 # kludge scheduler install
 cat src/scheduler.cc/samples/fifo/Makefile.orig | sed -e 's|%{_prefix}|$(RPM_BUILD_ROOT)%{_prefix}|' | sed -e 's|/var/spool|$(RPM_BUILD_ROOT)/var/spool|' >src/scheduler.cc/samples/fifo/Makefile
 # run make install
-#make install prefix=$RPM_BUILD_ROOT/usr PBS_SERVER_HOME=$RPM_BUILD_ROOT/var/spool/pbs
+#make install prefix=$RPM_BUILD_ROOT%{_prefix} PBS_SERVER_HOME=$RPM_BUILD_ROOT/var/spool/pbs
 %{__make} install prefix=$RPM_BUILD_ROOT%{_prefix}
 # copy docs
-#cp INSTALL PBS_License.text Read.Me Release_Notes $RPM_BUILD_ROOT/usr
+#cp INSTALL PBS_License.text Read.Me Release_Notes $RPM_BUILD_ROOT%{_prefix}
 # copy startup files
 cp pbs_mom pbs_server pbs_sched $RPM_BUILD_ROOT/etc/rc.d/init.d
 # copy scripts
-#cp pbsenv.sh pbsenv.csh $RPM_BUILD_ROOT/usr/bin
+#cp pbsenv.sh pbsenv.csh $RPM_BUILD_ROOT%{_bindir}
 cp pbsrun pbsconfig $RPM_BUILD_ROOT%{_bindir}
 # make sure all the config files exist
 touch $RPM_BUILD_ROOT/var/spool/pbs/default_server
@@ -135,49 +135,31 @@ rm -rf $RPM_BUILD_ROOT
 
 %post mom
 /sbin/chkconfig --add pbs_mom
-if [ -f /var/lock/subsys/pbs_mom ]; then
-	/etc/rc.d/init.d/pbs_mom restart >/dev/null 2>&1
-else
-	echo "Run \"/etc/rc.d/init.d/pbs_mom start\" to start pbs_mom daemon."
-fi
+%service pbs_mom restart "pbs_mom daemon"
 
 %preun mom
 if [ "$1" = "0" ]; then
-	if [ -f /var/lock/subsys/pbs_mom ]; then
-		/etc/rc.d/init.d/pbs_mom stop >&2
-	fi
+	%service pbs_mom stop
 	/sbin/chkconfig --del pbs_mom
 fi
 
 %post server
 /sbin/chkconfig --add pbs_server
-if [ -f /var/lock/subsys/pbs_server ]; then
-	/etc/rc.d/init.d/pbs_server restart >/dev/null 2>&1
-else
-	echo "Run \"/etc/rc.d/init.d/pbs_server start\" to start pbs_server daemon."
-fi
+%service pbs_server restart "pbs_server daemon"
 
 %preun server
 if [ "$1" = "0" ]; then
-	if [ -f /var/lock/subsys/pbs_server ]; then
-		/etc/rc.d/init.d/pbs_server stop >&2
-	fi
+	%service pbs_server stop
 	/sbin/chkconfig --del pbs_server
 fi
 
 %post sched
 /sbin/chkconfig --add pbs_sched
-if [ -f /var/lock/subsys/pbs_shed ]; then
-	/etc/rc.d/init.d/pbs_shed restart >/dev/null 2>&1
-else
-	echo "Run \"/etc/rc.d/init.d/pbs_shed start\" to start pbs_shed daemon."
-fi
+%service pbs_shed restart "pbs_shed daemon"
 
 %preun sched
 if [ "$1" = "0" ]; then
-	if [ -f /var/lock/subsys/pbs_sched ]; then
-		/etc/rc.d/init.d/pbs_sched stop >&2
-	fi
+	%service pbs_sched stop
 	/sbin/chkconfig --del pbs_sched
 fi
 
@@ -192,8 +174,8 @@ fi
 %attr(755,root,root) %{_bindir}/pbs_tclsh
 %attr(755,root,root) %{_bindir}/pbsconfig
 %attr(755,root,root) %{_bindir}/pbsdsh
-#/usr/bin/pbsenv.csh
-#/usr/bin/pbsenv.sh
+#%{_bindir}/pbsenv.csh
+#%{_bindir}/pbsenv.sh
 %attr(755,root,root) %{_bindir}/pbsnodes
 %attr(755,root,root) %{_bindir}/pbsrun
 %attr(755,root,root) %{_bindir}/printjob
@@ -227,7 +209,7 @@ fi
 %{_libdir}/libpbs.a
 %{_libdir}/libsite.a
 %{_libdir}/pbs_sched.a
-#/usr/lib/pbs
+#%{_prefix}/lib/pbs
 %{_includedir}/pbs_error.h
 %{_includedir}/pbs_ifl.h
 %{_includedir}/tm.h
