@@ -1,5 +1,5 @@
 Summary:	Portable Batch System
-Summary(pl.UTF-8):   Portable Batch System - przenośny system wsadowy
+Summary(pl.UTF-8):	Portable Batch System - przenośny system wsadowy
 Name:		OpenPBS
 Version:	2.3.16
 Release:	0.1
@@ -38,7 +38,7 @@ równoległego.
 
 %package mom
 Summary:	PBS client daemon: pbs_mom
-Summary(pl.UTF-8):   Demon kliencki PBS: pbs_mom
+Summary(pl.UTF-8):	Demon kliencki PBS: pbs_mom
 Group:		Applications/Networking
 Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name} = %{version}-%{release}
@@ -53,7 +53,7 @@ Ten pakiet zawiera demona klienckiego pbs_mom i jego skrypt startowy.
 
 %package server
 Summary:	PBS server daemon: pbs_server
-Summary(pl.UTF-8):   Demon serwera PBS: pbs_server
+Summary(pl.UTF-8):	Demon serwera PBS: pbs_server
 Group:		Applications/Networking
 Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name} = %{version}-%{release}
@@ -69,7 +69,7 @@ startowy.
 
 %package sched
 Summary:	PBS scheduler daemon: pbs_sched
-Summary(pl.UTF-8):   Demon schedulera PBS: pbs_sched
+Summary(pl.UTF-8):	Demon schedulera PBS: pbs_sched
 Group:		Applications/Networking
 Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name} = %{version}-%{release}
