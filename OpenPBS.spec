@@ -1,5 +1,5 @@
 Summary:	Portable Batch System
-Summary(pl):	Portable Batch System - przeno∂ny system wsadowy
+Summary(pl.UTF-8):   Portable Batch System - przeno≈õny system wsadowy
 Name:		OpenPBS
 Version:	2.3.16
 Release:	0.1
@@ -28,17 +28,17 @@ on networked, multi-platform UNIX environments, including
 heterogeneous clusters of workstations, supercomputers, and massively
 parallel systems.
 
-%description -l pl
-PBS (Portable Batch System - przeno∂ny system wsadowy) jest
+%description -l pl.UTF-8
+PBS (Portable Batch System - przeno≈õny system wsadowy) jest
 elastycznym oprogramowaniem do przetwarzania wsadowego rozwijanym w
-NASA Ames Research Center. Dzia≥a w usieciowionych, wieloplatformowych
-∂rodowiskach uniksowych, w≥±cznie z heterogenicznymi klastrami stacji
-roboczych, superkomputerÛw i systemÛw masowego przetwarzania
-rÛwnoleg≥ego.
+NASA Ames Research Center. Dzia≈Ça w usieciowionych, wieloplatformowych
+≈õrodowiskach uniksowych, w≈ÇƒÖcznie z heterogenicznymi klastrami stacji
+roboczych, superkomputer√≥w i system√≥w masowego przetwarzania
+r√≥wnoleg≈Çego.
 
 %package mom
 Summary:	PBS client daemon: pbs_mom
-Summary(pl):	Demon kliencki PBS: pbs_mom
+Summary(pl.UTF-8):   Demon kliencki PBS: pbs_mom
 Group:		Applications/Networking
 Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name} = %{version}-%{release}
@@ -48,12 +48,12 @@ Requires:	rc-scripts
 This package contains the PBS client daemon pbs_mom executable and
 startup script.
 
-%description mom -l pl
+%description mom -l pl.UTF-8
 Ten pakiet zawiera demona klienckiego pbs_mom i jego skrypt startowy.
 
 %package server
 Summary:	PBS server daemon: pbs_server
-Summary(pl):	Demon serwera PBS: pbs_server
+Summary(pl.UTF-8):   Demon serwera PBS: pbs_server
 Group:		Applications/Networking
 Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name} = %{version}-%{release}
@@ -63,13 +63,13 @@ Requires:	rc-scripts
 This package contains the PBS server daemon pbs_server executable and
 startup script.
 
-%description server -l pl
+%description server -l pl.UTF-8
 Ten pakiet zawiera demona serwera PBS (pbs_server) i jego skrypt
 startowy.
 
 %package sched
 Summary:	PBS scheduler daemon: pbs_sched
-Summary(pl):	Demon schedulera PBS: pbs_sched
+Summary(pl.UTF-8):   Demon schedulera PBS: pbs_sched
 Group:		Applications/Networking
 Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name} = %{version}-%{release}
@@ -79,7 +79,7 @@ Requires:	rc-scripts
 This package contains the PBS scheduler daemon pbs_sched executable
 and startup script.
 
-%description sched -l pl
+%description sched -l pl.UTF-8
 Ten pakiet zawiera demona schedulera pbs_sched i jego skrypt startowy.
 
 %prep
